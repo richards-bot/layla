@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layla!!</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: linear-gradient(135deg, #FFE4F0 0%, #FFF0E4 25%, #E4F0FF 50%, #F0FFE4 75%, #FFE4F0 100%);
+  background-size: 400% 400%;
+  animation: bgShift 12s ease infinite;
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: 'Nunito', sans-serif;
+  position: relative;
+}
+
+@keyframes bgShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* TITLE */
+.title {
+  position: absolute;
+  top: 18px;
+  width: 100%;
+  text-align: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(3rem, 10vw, 6rem);
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, #FF6B9D, #FF9A3C, #FFD93D, #6BCB77, #4D96FF, #C77DFF);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: rainbowText 3s linear infinite;
+  filter: drop-shadow(2px 3px 0px rgba(0,0,0,0.15));
+  z-index: 100;
+  pointer-events: none;
+  user-select: none;
+}
+
+@keyframes rainbowText {
+  0% { background-position: 0% center; }
+  100% { background-position: 300% center; }
+}
+
+/* STARS / SPARKLES */
+.sparkle {
+  position: absolute;
+  pointer-events: none;
+  font-size: 1.4rem;
+  animation: sparkleFloat 4s ease-in-out infinite;
+  opacity: 0.7;
+  z-index: 1;
+}
+@keyframes sparkleFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+  50% { transform: translateY(-14px) rotate(20deg); opacity: 1; }
+}
+
+/* GIRL CHARACTER */
+#girl {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  cursor: default;
+  z-index: 50;
+  transition: none;
+}
+
+#girl svg {
+  width: 120px;
+  height: 180px;
+  overflow: visible;
+}
+
+/* Girl idle bounce */
+.girl-idle {
+  animation: girlIdle 2s ease-in-out infinite;
+}
+@keyframes girlIdle {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-8px); }
+}
+
+/* Girl running */
+.girl-running {
+  animation: girlRun 0.3s ease infinite alternate;
+}
+@keyframes girlRun {
+  0% { transform: translate(-50%, -50%) scaleX(1) rotate(-4deg); }
+  100% { transform: translate(-50%, -50%) scaleX(1) rotate(4deg); }
+}
+
+/* Girl pick-up animation */
+.girl-pickup {
+  animation: girlPickup 0.6s ease forwards;
+}
+@keyframes girlPickup {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  30% { transform: translate(-50%, -60%) scale(1.15) rotate(-5deg); }
+  60% { transform: translate(-50%, -55%) scale(1.1) rotate(5deg); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* CATS */
+.cat {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  z-index: 40;
+  transition: transform 0.1s;
+  user-select: none;
+}
+.cat:hover { transform: scale(1.15); }
+.cat svg { width: 70px; height: 70px; overflow: visible; }
+
+/* Cat roaming animation handled by JS */
+/* Cat pickup disappear */
+.cat-disappear {
+  animation: catPoof 0.3s ease forwards;
+}
+@keyframes catPoof {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.5; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* Cat on girl (held) */
+.cat-held {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  top: -40px;
+  left: 35px;
+  animation: catHeld 1.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 55;
+}
+@keyframes catHeld {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+
+/* HEARTS */
+.heart-burst {
+  position: absolute;
+  pointer-events: none;
+  font-size: 1.6rem;
+  z-index: 200;
+  animation: heartFloat 1.2s ease-out forwards;
+}
+@keyframes heartFloat {
+  0% { transform: translateY(0) scale(0.5); opacity: 1; }
+  100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
+}
+
+/* TOOLTIP */
+.hint {
+  position: fixed;
+  bottom: 18px;
+  width: 100%;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #CC88AA;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 200;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+}
+</style>
+</head>
+<body>
+
+<div class="title">Layla!! ✨</div>
+
+<!-- Sparkle decorations -->
+<div class="sparkle" style="top:12%;left:8%;animation-delay:0s">🌸</div>
+<div class="sparkle" style="top:15%;left:88%;animation-delay:0.8s">⭐</div>
+<div class="sparkle" style="top:75%;left:6%;animation-delay:1.2s">🌺</div>
+<div class="sparkle" style="top:80%;left:90%;animation-delay:0.4s">💫</div>
+<div class="sparkle" style="top:40%;left:4%;animation-delay:1.6s">🌟</div>
+<div class="sparkle" style="top:45%;left:93%;animation-delay:0.2s">🦋</div>
+<div class="sparkle" style="top:88%;left:50%;animation-delay:1s">🌈</div>
+<div class="sparkle" style="top:8%;left:50%;animation-delay:0.6s">✨</div>
+
+<!-- GIRL CHARACTER -->
+<div id="girl" class="girl-idle">
+  <svg viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg">
+    <!-- Hair back -->
+    <ellipse cx="60" cy="40" rx="34" ry="36" fill="#5C2D0E"/>
+    <!-- Two pigtails -->
+    <ellipse cx="28" cy="55" rx="10" ry="22" fill="#5C2D0E" transform="rotate(-15,28,55)"/>
+    <ellipse cx="92" cy="55" rx="10" ry="22" fill="#5C2D0E" transform="rotate(15,92,55)"/>
+    <!-- Hair ribbons -->
+    <circle cx="28" cy="36" r="7" fill="#FF6B9D"/>
+    <circle cx="92" cy="36" r="7" fill="#FF6B9D"/>
+    <circle cx="28" cy="36" r="4" fill="#FF94C0"/>
+    <circle cx="92" cy="36" r="4" fill="#FF94C0"/>
+    <!-- Skin - face -->
+    <ellipse cx="60" cy="42" rx="28" ry="30" fill="#FDDBB4"/>
+    <!-- Eyes -->
+    <ellipse cx="48" cy="40" rx="6" ry="7" fill="white"/>
+    <ellipse cx="72" cy="40" rx="6" ry="7" fill="white"/>
+    <ellipse cx="49" cy="41" rx="4" ry="5" fill="#3A1A00"/>
+    <ellipse cx="73" cy="41" rx="4" ry="5" fill="#3A1A00"/>
+    <circle cx="50" cy="39" r="1.5" fill="white"/>
+    <circle cx="74" cy="39" r="1.5" fill="white"/>
+    <!-- Eyelashes -->
+    <line x1="43" y1="33" x2="41" y2="30" stroke="#3A1A00" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="48" y1="32" x2="47" y2="29" stroke="#3A1A00" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="53" y1="33" x2="54" y2="30" stroke="#3A1A00" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="67" y1="33" x2="65" y2="30" stroke="#3A1A00" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="72" y1="32" x2="72" y2="29" stroke="#3A1A00" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="77" y1="33" x2="79" y2="30" stroke="#3A1A00" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Rosy cheeks -->
+    <ellipse cx="38" cy="50" rx="9" ry="6" fill="#FFB6C1" opacity="0.5"/>
+    <ellipse cx="82" cy="50" rx="9" ry="6" fill="#FFB6C1" opacity="0.5"/>
+    <!-- Nose -->
+    <ellipse cx="60" cy="50" rx="3" ry="2" fill="#F5C498"/>
+    <!-- Smile -->
+    <path d="M50 58 Q60 67 70 58" stroke="#CC6677" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <!-- Teeth -->
+    <path d="M52 59 Q60 66 68 59" fill="white" opacity="0.6"/>
+
+    <!-- Neck -->
+    <rect x="52" y="68" width="16" height="14" rx="4" fill="#FDDBB4"/>
+
+    <!-- Dress body -->
+    <path d="M25 78 Q30 72 52 72 L60 78 L68 72 Q90 72 95 78 L105 160 Q60 170 15 160 Z" fill="#FF8ED4"/>
+    <!-- Dress collar -->
+    <path d="M45 72 Q60 82 75 72" fill="#FF6BBF" stroke="#FF6BBF" stroke-width="1"/>
+    <!-- Dress decorations -->
+    <circle cx="60" cy="95" r="4" fill="#FFD93D"/>
+    <circle cx="48" cy="108" r="3.5" fill="#FFD93D"/>
+    <circle cx="72" cy="108" r="3.5" fill="#FFD93D"/>
+    <circle cx="40" cy="122" r="3" fill="#FFD93D"/>
+    <circle cx="80" cy="122" r="3" fill="#FFD93D"/>
+    <!-- Dress bottom ruffle -->
+    <path d="M15 153 Q30 145 45 153 Q60 161 75 153 Q90 145 105 153 L105 165 Q60 175 15 165 Z" fill="#FF6BBF"/>
+
+    <!-- Arms -->
+    <!-- Left arm -->
+    <path d="M28 80 Q10 95 15 115" stroke="#FDDBB4" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <ellipse cx="15" cy="116" rx="8" ry="8" fill="#FDDBB4"/>
+    <!-- Right arm -->
+    <path d="M92 80 Q110 95 105 115" stroke="#FDDBB4" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <ellipse cx="105" cy="116" rx="8" ry="8" fill="#FDDBB4"/>
+
+    <!-- Legs -->
+    <path d="M40 158 Q36 170 34 182" stroke="#FDDBB4" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M80 158 Q84 170 86 182" stroke="#FDDBB4" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <!-- Shoes -->
+    <ellipse cx="32" cy="183" rx="14" ry="8" fill="#CC44AA"/>
+    <ellipse cx="88" cy="183" rx="14" ry="8" fill="#CC44AA"/>
+    <!-- Shoe bows -->
+    <circle cx="32" cy="178" r="4" fill="#FF88CC"/>
+    <circle cx="88" cy="178" r="4" fill="#FF88CC"/>
+  </svg>
+</div>
+
+<div class="hint">🐱 Click on a cat for a surprise! 🐱</div>
+
+<script>
+// ===================== CAT DEFINITIONS =====================
+const CAT_TYPES = [
+  { name: 'ginger',  body: '#F4892A', stripe: '#C85A00', belly: '#FDD9A0', nose: '#FF9999', inner:'#FFB6B6' },
+  { name: 'black',   body: '#222222', stripe: '#111111', belly: '#555555', nose: '#FF9999', inner:'#FF7777' },
+  { name: 'white',   body: '#F5F5F5', stripe: '#DDDDDD', belly: '#FFFFFF', nose: '#FFB6C1', inner:'#FFD0D8' },
+  { name: 'tabby',   body: '#A0724A', stripe: '#6B4226', belly: '#DEB887', nose: '#FFAAAA', inner:'#FFB6B6' },
+  { name: 'grey',    body: '#888888', stripe: '#555555', belly: '#CCCCCC', nose: '#FFBBCC', inner:'#FFD0D8' },
+  { name: 'calico',  body: '#F4892A', stripe: '#222222', belly: '#FFFFFF', nose: '#FFB6C1', inner:'#FFD0D8' },
+  { name: 'blue',    body: '#6699BB', stripe: '#4477AA', belly: '#AACCDD', nose: '#FFB6C1', inner:'#FFD0D8' },
+  { name: 'cream',   body: '#FFE4B5', stripe: '#DEB887', belly: '#FFFACD', nose: '#FFB6C1', inner:'#FFD0D8' },
+];
+
+function makeCatSVG(c) {
+  return `<svg viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tail -->
+  <path d="M55 55 Q72 40 68 25 Q65 18 60 22 Q58 35 52 50" fill="${c.body}" stroke="${c.stripe}" stroke-width="1"/>
+  <!-- Body -->
+  <ellipse cx="34" cy="48" rx="22" ry="18" fill="${c.body}"/>
+  <!-- Belly -->
+  <ellipse cx="34" cy="50" rx="13" ry="11" fill="${c.belly}" opacity="0.7"/>
+  <!-- Stripes (tabby/calico) -->
+  <line x1="22" y1="42" x2="26" y2="54" stroke="${c.stripe}" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="34" y1="40" x2="34" y2="54" stroke="${c.stripe}" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="46" y1="42" x2="42" y2="54" stroke="${c.stripe}" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Head -->
+  <ellipse cx="34" cy="26" rx="20" ry="19" fill="${c.body}"/>
+  <!-- Ears -->
+  <polygon points="16,14 10,2 24,10" fill="${c.body}"/>
+  <polygon points="52,14 60,2 46,10" fill="${c.body}"/>
+  <!-- Inner ears -->
+  <polygon points="17,13 13,5 23,10" fill="${c.inner}" opacity="0.8"/>
+  <polygon points="51,13 57,5 47,10" fill="${c.inner}" opacity="0.8"/>
+  <!-- Face -->
+  <ellipse cx="34" cy="28" rx="13" ry="11" fill="${c.belly}" opacity="0.5"/>
+  <!-- Eyes -->
+  <ellipse cx="27" cy="24" rx="5" ry="5.5" fill="white"/>
+  <ellipse cx="41" cy="24" rx="5" ry="5.5" fill="white"/>
+  <ellipse cx="27.5" cy="24.5" rx="3.5" ry="4" fill="#223322"/>
+  <ellipse cx="41.5" cy="24.5" rx="3.5" ry="4" fill="#223322"/>
+  <circle cx="28.5" cy="23" r="1.2" fill="white"/>
+  <circle cx="42.5" cy="23" r="1.2" fill="white"/>
+  <!-- Nose -->
+  <polygon points="34,32 31,29 37,29" fill="${c.nose}"/>
+  <!-- Mouth -->
+  <path d="M31 32 Q34 36 37 32" stroke="#AA5566" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Whiskers -->
+  <line x1="14" y1="29" x2="26" y2="31" stroke="#999" stroke-width="1" stroke-linecap="round"/>
+  <line x1="14" y1="33" x2="26" y2="33" stroke="#999" stroke-width="1" stroke-linecap="round"/>
+  <line x1="54" y1="29" x2="42" y2="31" stroke="#999" stroke-width="1" stroke-linecap="round"/>
+  <line x1="54" y1="33" x2="42" y2="33" stroke="#999" stroke-width="1" stroke-linecap="round"/>
+  <!-- Front paws -->
+  <ellipse cx="24" cy="63" rx="8" ry="6" fill="${c.body}"/>
+  <ellipse cx="44" cy="63" rx="8" ry="6" fill="${c.body}"/>
+</svg>`;
+}
+
+// ===================== STATE =====================
+const NUM_CATS = 7;
+let cats = [];
+let girlEl = document.getElementById('girl');
+let girlPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+let girlState = 'idle'; // idle | running | pickup | returning
+let heldCatType = null;
+let animFrame = null;
+
+// ===================== INIT CATS =====================
+function spawnCats() {
+  cats = [];
+  for (let i = 0; i < NUM_CATS; i++) {
+    const typeIdx = i % CAT_TYPES.length;
+    const el = document.createElement('div');
+    el.className = 'cat';
+    el.innerHTML = makeCatSVG(CAT_TYPES[typeIdx]);
+    el.dataset.id = i;
+
+    // Random start position avoiding center
+    let x, y;
+    do {
+      x = 60 + Math.random() * (window.innerWidth - 140);
+      y = 120 + Math.random() * (window.innerHeight - 200);
+    } while (Math.abs(x - window.innerWidth/2) < 160 && Math.abs(y - window.innerHeight/2) < 140);
+
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.body.appendChild(el);
+
+    cats.push({
+      el,
+      x, y,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
+      roamTimer: Math.random() * 180,
+      held: false,
+      disappearing: false,
+      typeIdx,
+    });
+
+    el.addEventListener('click', () => onCatClick(i));
+  }
+}
+
+// ===================== ROAMING =====================
+function roamCats() {
+  cats.forEach((cat, idx) => {
+    if (cat.held || cat.disappearing) return;
+    cat.roamTimer--;
+    if (cat.roamTimer <= 0) {
+      cat.vx = (Math.random() - 0.5) * 1.8;
+      cat.vy = (Math.random() - 0.5) * 1.8;
+      cat.roamTimer = 90 + Math.random() * 200;
+    }
+    cat.x += cat.vx;
+    cat.y += cat.vy;
+
+    // Bounce off edges
+    const pad = 40;
+    if (cat.x < pad) { cat.x = pad; cat.vx *= -1; }
+    if (cat.x > window.innerWidth - pad - 70) { cat.x = window.innerWidth - pad - 70; cat.vx *= -1; }
+    if (cat.y < 110) { cat.y = 110; cat.vy *= -1; }
+    if (cat.y > window.innerHeight - pad - 70) { cat.y = window.innerHeight - pad - 70; cat.vy *= -1; }
+
+    cat.el.style.left = cat.x + 'px';
+    cat.el.style.top = cat.y + 'px';
+    // Flip direction
+    cat.el.style.transform = cat.vx < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+  });
+}
+
+// ===================== GIRL POSITION =====================
+function setGirlPos(x, y) {
+  girlPos.x = x;
+  girlPos.y = y;
+  girlEl.style.left = x + 'px';
+  girlEl.style.top = y + 'px';
+  girlEl.style.transform = 'translate(-50%, -50%)';
+}
+
+// ===================== CAT CLICK =====================
+function onCatClick(idx) {
+  if (girlState !== 'idle') return;
+  const cat = cats[idx];
+  if (cat.held || cat.disappearing) return;
+
+  girlState = 'running';
+  cat.disappearing = true;
+  girlEl.className = 'girl-running';
+
+  const targetX = cat.x + 35;
+  const targetY = cat.y + 35;
+
+  runGirlTo(targetX, targetY, () => {
+    // Arrived! Pickup animation
+    girlState = 'pickup';
+    girlEl.className = 'girl-pickup';
+    cat.el.classList.add('cat-disappear');
+
+    // Hearts!
+    spawnHearts(targetX, targetY);
+
+    setTimeout(() => {
+      cat.el.style.display = 'none';
+      cat.el.classList.remove('cat-disappear');
+      cat.held = true;
+      cat.disappearing = false;
+      heldCatType = cat.typeIdx;
+
+      // Show mini cat on girl
+      showHeldCat(cat.typeIdx);
+
+      // Return to center
+      girlState = 'returning';
+      girlEl.className = 'girl-running';
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+
+      runGirlTo(cx, cy, () => {
+        girlState = 'idle';
+        girlEl.className = 'girl-idle';
+
+        // Release cat near girl after a moment
+        setTimeout(() => {
+          removeHeldCat();
+          releaseCat(idx);
+        }, 1800);
+      });
+    }, 500);
+  });
+}
+
+let girlRunTarget = null;
+let girlRunCallback = null;
+let girlRunRAF = null;
+
+function runGirlTo(tx, ty, cb) {
+  if (girlRunRAF) cancelAnimationFrame(girlRunRAF);
+  girlRunTarget = { x: tx, y: ty };
+  girlRunCallback = cb;
+
+  // Flip girl toward target
+  const dx = tx - girlPos.x;
+  girlEl.style.transform = dx < 0
+    ? 'translate(-50%,-50%) scaleX(-1)'
+    : 'translate(-50%,-50%) scaleX(1)';
+
+  function step() {
+    const dx = girlRunTarget.x - girlPos.x;
+    const dy = girlRunTarget.y - girlPos.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 6) {
+      setGirlPos(girlRunTarget.x, girlRunTarget.y);
+      girlEl.style.transform = 'translate(-50%,-50%)';
+      if (girlRunCallback) girlRunCallback();
+      return;
+    }
+    const speed = Math.min(6, dist * 0.12);
+    setGirlPos(girlPos.x + (dx/dist)*speed, girlPos.y + (dy/dist)*speed);
+    girlEl.style.transform = dx < 0
+      ? 'translate(-50%,-50%) scaleX(-1)'
+      : 'translate(-50%,-50%) scaleX(1)';
+    girlRunRAF = requestAnimationFrame(step);
+  }
+  girlRunRAF = requestAnimationFrame(step);
+}
+
+// ===================== HELD CAT =====================
+let heldCatEl = null;
+function showHeldCat(typeIdx) {
+  removeHeldCat();
+  const div = document.createElement('div');
+  div.className = 'cat-held';
+  div.innerHTML = makeCatSVG(CAT_TYPES[typeIdx]);
+  div.querySelector('svg').style.width = '50px';
+  div.querySelector('svg').style.height = '50px';
+  girlEl.appendChild(div);
+  heldCatEl = div;
+}
+function removeHeldCat() {
+  if (heldCatEl) { heldCatEl.remove(); heldCatEl = null; }
+}
+
+// ===================== RELEASE CAT =====================
+function releaseCat(idx) {
+  const cat = cats[idx];
+  cat.held = false;
+  heldCatType = null;
+  // Place near center
+  const angle = Math.random() * Math.PI * 2;
+  const r = 90 + Math.random() * 60;
+  cat.x = window.innerWidth/2 + Math.cos(angle) * r - 35;
+  cat.y = window.innerHeight/2 + Math.sin(angle) * r - 35;
+  cat.vx = (Math.random() - 0.5) * 1.2;
+  cat.vy = (Math.random() - 0.5) * 1.2;
+  cat.roamTimer = 60;
+  cat.el.style.left = cat.x + 'px';
+  cat.el.style.top = cat.y + 'px';
+  cat.el.style.display = '';
+  cat.el.style.transform = 'scale(0)';
+  // Pop back in
+  setTimeout(() => {
+    cat.el.style.transition = 'transform 0.3s cubic-bezier(.34,1.56,.64,1)';
+    cat.el.style.transform = 'scale(1)';
+    spawnHearts(cat.x + 35, cat.y + 35);
+    setTimeout(() => { cat.el.style.transition = ''; }, 400);
+  }, 50);
+}
+
+// ===================== HEARTS =====================
+function spawnHearts(x, y) {
+  const symbols = ['💖','💕','💗','💓','✨','🌟'];
+  for (let i = 0; i < 5; i++) {
+    const h = document.createElement('div');
+    h.className = 'heart-burst';
+    h.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    h.style.left = (x - 10 + (Math.random()-0.5)*50) + 'px';
+    h.style.top = (y - 10) + 'px';
+    h.style.animationDelay = (Math.random() * 0.3) + 's';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1500);
+  }
+}
+
+// ===================== MAIN LOOP =====================
+function loop() {
+  roamCats();
+  animFrame = requestAnimationFrame(loop);
+}
+
+// ===================== HANDLE RESIZE =====================
+window.addEventListener('resize', () => {
+  girlPos.x = window.innerWidth / 2;
+  girlPos.y = window.innerHeight / 2;
+  if (girlState === 'idle') {
+    setGirlPos(girlPos.x, girlPos.y);
+  }
+});
+
+// ===================== INIT =====================
+setGirlPos(window.innerWidth / 2, window.innerHeight / 2);
+spawnCats();
+loop();
+</script>
+</body>
+</html>
